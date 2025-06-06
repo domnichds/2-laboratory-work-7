@@ -4,27 +4,31 @@
 #include <random>
 #include <chrono>
 #include <future>
+#include <mutex>
+#include <string>
 
-void multiplyThread(const std::vector<float>& data_1, const std::vector<float>& data_2, int n) {
+std::mutex mtx;
+
+void multiplyThread(const std::string& threadName, const std::vector<float>& data_1, const std::vector<float>& data_2, int n) {
     for (int i = 0; i < n; i++) {
-        std::cout << "MultiplyThread" << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::cout << threadName << std::endl;
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
         std::cout << data_1[i] << " * " << data_2[i] << " = " << data_1[i] * data_2[i] << std::endl;
     }
 }
 
-void addThread(const std::vector<float>& data_1, const std::vector<float>& data_2, int n) {
+void addThread(const std::string& threadName, const std::vector<float>& data_1, const std::vector<float>& data_2, int n) {
     for (int j = 0; j < n; j++) {
-        std::cout << "AddThread" << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::cout << threadName << std::endl;
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
         std::cout << data_1[j] << " + " << data_2[j] << " = " << data_1[j] + data_2[j] << std::endl;
     }
 }
 
-void randomThread(const std::vector<float>& data, int n) {
+void randomThread(const std::string& threadName, const std::vector<float>& data, int n) {
     for (int k = 0; k < n; k++) {
-        std::cout << "RandomThread" << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::cout << threadName << std::endl;
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
         std::cout << data[k] << std::endl;
     }
 }
@@ -54,24 +58,17 @@ int main() {
     for (int i = 0; i < n3; ++i) {
         randomData.push_back(dist(gen));
     }
-    /*
-    std::thread thread1(multiplyThread, std::ref(multiplyData_1), std::ref(multiplyData_2), n1);
-    std::thread thread2(addThread, std::ref(addData_1), std::ref(addData_2), n2);
-    std::thread thread3(randomThread, std::ref(randomData), n3);
+
+    std::thread thread1(multiplyThread, "Multiply Thread", std::ref(multiplyData_1), std::ref(multiplyData_2), n1);
+    std::thread thread2(addThread, "Add Thread", std::ref(addData_1), std::ref(addData_2), n2);
+    std::thread thread3(randomThread, "Random Thread", std::ref(randomData), n3);
 
     thread1.join();
+    std::cout << "MultiplyThread has completed." << std::endl;
     thread2.join();
+    std::cout << "AddThread has completed." << std::endl;
     thread3.join();
-    */
-    auto future1 = std::async(std::launch::async, multiplyThread, std::ref(multiplyData_1), std::ref(multiplyData_2), n1);
-    auto future2 = std::async(std::launch::async, addThread, std::ref(addData_1), std::ref(addData_2), n2);
-    auto future3 = std::async(std::launch::async, randomThread, std::ref(randomData), n3);
-
-    future1.get();
-    future2.get();
-    future3.get();
-
+    std::cout << "RandomThread has completed." << std::endl;
     std::cout << "All threads completed." << std::endl;
-
     return 0;
 }
